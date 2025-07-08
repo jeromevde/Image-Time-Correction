@@ -6,6 +6,7 @@ from PIL.ExifTags import TAGS
 import piexif
 import os 
 from PIL import UnidentifiedImageError  # minimal import
+from tqdm import tqdm  # progress bar
 
 
 def print_metadata(image_path):
@@ -106,18 +107,24 @@ def update_exif_datetime(image_path):
 
 
 
+def get_image_files_recursive(folder_path):
+    image_files = []
+    for root, _, files in os.walk(folder_path):
+        for filename in files:
+            if filename.lower().endswith((".png", ".jpg", ".jpeg")) and not filename.startswith("._"):
+                image_files.append(os.path.join(root, filename))
+    return image_files
+
 if __name__ == "__main__":
     folder_path = "/Volumes/Extreme SSD/Images/Pellicule"  # Change this to your folder path
-
-    for filename in os.listdir(folder_path):
-        print(filename)
-        if filename.lower().endswith((".png", ".jpg", ".jpeg")):
-            try:
-                image_path = os.path.join(folder_path, filename)
-                update_exif_datetime(image_path)
-            except UnidentifiedImageError:
-                print(f"Cannot identify image file: {filename}")
-            except Exception as e:
-                print(f"Error processing {filename}: {e}")
+    image_files = get_image_files_recursive(folder_path)
+    for image_path in tqdm(image_files, desc="Processing images"):
+        filename = os.path.basename(image_path)
+        try:
+            update_exif_datetime(image_path)
+        except UnidentifiedImageError:
+            print(f"Cannot identify image file: {filename}")
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
       
 # %%
