@@ -45,7 +45,7 @@ def extract_datetime_from_filename(filename):
                 datetime_str = f"{date_part} {time_part}"
                 return datetime.strptime(datetime_str, "%Y%m%d %H%M%S")
             
-            elif pattern == r"PXL_(\d{8})_(\d{8})":
+            elif pattern == r"(\d{8})_(\d{8})":
                 date_part = match.group(1)  # e.g., '20240511'
                 time_part = match.group(2)  # e.g., '195513703'
                 time_part_trimmed = time_part[:6]  # '195513'
