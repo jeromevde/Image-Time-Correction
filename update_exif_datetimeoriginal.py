@@ -1,4 +1,4 @@
-# %%
+#!/usr/bin/env python3
 import re
 from datetime import datetime
 from PIL import Image
@@ -7,6 +7,8 @@ import piexif
 import os 
 from PIL import UnidentifiedImageError  # minimal import
 from tqdm import tqdm  # progress bar
+import sys
+import subprocess
 
 
 def print_metadata(image_path):
@@ -64,11 +66,12 @@ def extract_datetime_from_filename(filename):
     return None  # Return None if no pattern matches
 
 
-def update_exif_datetime(image_path):
+def update_exif_datetime(image_path, custom_datetime_str=None):
     """
-    Updates the EXIF datetime metadata of an image based on the filename.
+    Updates the EXIF datetime metadata of an image based on the filename or custom datetime.
     Args:
         image_path (str): The file path to the image whose EXIF datetime needs to be updated.
+        custom_datetime (datetime, optional): Custom datetime to set. If None, extracts from filename.
     This function checks the EXIF metadata of the specified image for a "DateTimeOriginal" 
     entry. If not found, it extracts the date and time from the filename using a 
     predefined pattern. It then updates the EXIF metadata with the parsed datetime, 
@@ -94,15 +97,27 @@ def update_exif_datetime(image_path):
     filename = image_path.split('/')[-1]
 
     if date_time is None:
-        parsed_datetime = extract_datetime_from_filename(filename)
+        # If a custom date string is provided, parse it here; otherwise try to infer from filename
+        parsed_datetime = None
+        if custom_datetime_str:
+            try:
+                parsed_datetime = datetime.strptime(custom_datetime_str, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                print(f"Invalid custom datetime format for {filename}. Use YYYY-MM-DD HH:MM:SS")
+                return
+        else:
+            parsed_datetime = extract_datetime_from_filename(filename)
         if parsed_datetime:
             metadata_dict['Exif'][piexif.ExifIFD.DateTimeOriginal] = parsed_datetime.strftime("%Y:%m:%d %H:%M:%S").encode("utf-8")
             exif_bytes = piexif.dump(metadata_dict)
-            image.save(image_path, exif=exif_bytes)
-            print(f"EXIF of {filename} datetime updated and image saved.")
+            try:
+                image.save(image_path, exif=exif_bytes)
+                print(f"EXIF of {filename} datetime updated and image saved.")
+            except (PermissionError, OSError) as e:
+                print(f"Error saving {filename}: {e}. Check permissions or run from Terminal with Full Disk Access.")
         else:
             print(f"No valid time found {filename} to update EXIF datetime")
-    else :
+    else:
         print(f"EXIF already contains DateTimeOriginal for {filename}. No update needed.")
 
 
@@ -115,13 +130,33 @@ def get_image_files_recursive(folder_path):
                 image_files.append(os.path.join(root, filename))
     return image_files
 
+def prompt_for_date():
+    try:
+        result = subprocess.run([
+            'osascript', '-e',
+            'text returned of (display dialog "Enter custom date (YYYY-MM-DD HH:MM:SS) or leave blank for auto:" default answer "")'
+        ], capture_output=True, text=True)
+        return result.stdout.strip() if result.returncode == 0 else ""
+    except:
+        return ""
+
 if __name__ == "__main__":
-    folder_path = "/Volumes/Extreme SSD/Images/Pellicule"  # Change this to your folder path
+    folder_path = "/Volumes/Extreme SSD/Images/Pellicule"  # Default path
+    if not os.path.exists(folder_path):
+        folder_path = "."  # Fallback to current directory
+    custom_date_arg = None
+    if len(sys.argv) > 1 and sys.argv[1].strip() != "":
+        folder_path = sys.argv[1]
+    if len(sys.argv) > 2 and sys.argv[2].strip() != "":
+        custom_date_arg = sys.argv[2]
+    else:
+        # If no custom date provided, prompt for it
+        custom_date_arg = prompt_for_date()
     image_files = get_image_files_recursive(folder_path)
     for image_path in tqdm(image_files, desc="Processing images"):
         filename = os.path.basename(image_path)
         try:
-            update_exif_datetime(image_path)
+            update_exif_datetime(image_path, custom_date_arg)
         except UnidentifiedImageError:
             print(f"Cannot identify image file: {filename}")
         except Exception as e:
