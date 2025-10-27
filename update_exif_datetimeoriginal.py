@@ -101,10 +101,15 @@ def update_exif_datetime(image_path, custom_datetime_str=None):
         parsed_datetime = None
         if custom_datetime_str:
             try:
+                # Try full datetime first
                 parsed_datetime = datetime.strptime(custom_datetime_str, "%Y-%m-%d %H:%M:%S")
             except ValueError:
-                print(f"Invalid custom datetime format for {filename}. Use YYYY-MM-DD HH:MM:SS")
-                return
+                try:
+                    # Try date only, append 00:00:00
+                    parsed_datetime = datetime.strptime(custom_datetime_str, "%Y-%m-%d")
+                except ValueError:
+                    print_error(f"Invalid custom datetime format for {filename}. Use YYYY-MM-DD or YYYY-MM-DD HH:MM:SS")
+                    return
         else:
             parsed_datetime = extract_datetime_from_filename(filename)
         if parsed_datetime:
@@ -114,7 +119,7 @@ def update_exif_datetime(image_path, custom_datetime_str=None):
                 image.save(image_path, exif=exif_bytes)
                 print(f"EXIF of {filename} datetime updated and image saved.")
             except (PermissionError, OSError) as e:
-                print(f"Error saving {filename}: {e}. Check permissions or run from Terminal with Full Disk Access.")
+                print_error(f"Error saving {filename}: {e}. Check permissions or run from Terminal with Full Disk Access.")
         else:
             print(f"No valid time found {filename} to update EXIF datetime")
     else:
@@ -132,13 +137,13 @@ def get_image_files_recursive(folder_path):
 
 def prompt_for_date():
     try:
-        result = subprocess.run([
-            'osascript', '-e',
-            'text returned of (display dialog "Enter custom date (YYYY-MM-DD HH:MM:SS) or leave blank for auto:" default answer "")'
-        ], capture_output=True, text=True)
-        return result.stdout.strip() if result.returncode == 0 else ""
-    except:
+        date_input = input("Enter custom date (YYYY-MM-DD HH:MM:SS) or (YYYY-MM-DD) or leave blank for auto: ").strip()
+        return date_input if date_input else ""
+    except EOFError:
         return ""
+
+def print_error(msg):
+    print(f"\033[91m{msg}\033[0m", file=sys.stderr)  # Red color for errors
 
 if __name__ == "__main__":
     folder_path = "/Volumes/Extreme SSD/Images/Pellicule"  # Default path

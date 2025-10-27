@@ -6,24 +6,23 @@ The **EXIF Datetime Updater** is a Python script that updates the EXIF datetime 
 
 ## Update EXIF Datetime
 
-The script prompts for a custom date if not provided; otherwise infers from filenames.
+The script prompts for a custom date in terminal if not provided; otherwise infers from filenames.
 
 **CLI**: 
 
 ```bash
-python3 /Users/jerome/Documents/Image-Time-Correction/update_exif_datetimeoriginal.py /path/to/folder ["YYYY-MM-DD HH:MM:SS"]
+python3 /Users/jerome/Documents/Image-Time-Correction/update_exif_datetimeoriginal.py /path/to/folder ["YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"]
 ```
 
 **Shortcuts**: create Quick Action (Files/Folders) with Run Shell Script: 
 
-
 ```bash
-/usr/bin/env python3 /Users/jerome/Documents/Image-Time-Correction/update_exif_datetimeoriginal.py "$f"
+open -a Terminal.app "python3 /Users/jerome/Documents/Image-Time-Correction/update_exif_datetimeoriginal.py '$f'"
 ```
 
-**Note**: For protected folders, use CLI from Terminal with Full Disk Access granted. Shortcuts may be sandboxed and fail with "operation not permitted".
+This opens a Terminal window for input and logging. Progress bar and messages (red for errors) are shown.
 
-**Permissions**: For protected folders, grant Full Disk Access to Shortcuts: System Settings → Privacy & Security → Full Disk Access → + → /System/Applications/Shortcuts.app
+**Permissions**: For protected folders, grant Full Disk Access to Terminal: System Settings → Privacy & Security → Full Disk Access → + → /System/Applications/Utilities/Terminal.app
 
 If permission errors occur, ensure the folder is writable or grant Full Disk Access to Shortcuts/Terminal in System Settings → Privacy & Security.
 
