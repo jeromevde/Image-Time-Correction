@@ -62,13 +62,13 @@ def get_image_files_recursive(folder_path):
 
 def prompt_for_date():
     try:
-        return input("Enter date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS) or blank: ").strip()
+        return input("Enter date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS) or blank if you want the program to infer from filename: ").strip()
     except EOFError:
         return ""
 
 if __name__ == "__main__":
     folder_path = sys.argv[1] if len(sys.argv) > 1 else "."
-    custom_date = sys.argv[2] if len(sys.argv) > 2 else prompt_for_date()
+    custom_date = prompt_for_date()
     image_files = get_image_files_recursive(folder_path)
     for image_path in tqdm(image_files, desc="Processing"):
         update_exif_datetime(image_path, custom_date)
