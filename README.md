@@ -17,7 +17,7 @@ python3 update_exif_datetimeoriginal.py /path/to/folder
 Run this command in the repository folder to add a simple shortcut command named `dt` to your shell:
 
 ```bash
-echo "alias dt='python3 \"\$(realpath update_exif_datetimeoriginal.py)\"'" >> ~/.zshrc && source ~/.zshrc
+echo "alias dt='python3 \"$(pwd)/update_exif_datetimeoriginal.py\"'" >> ~/.zshrc && source ~/.zshrc
 ```
 
 Then run:
