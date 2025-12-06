@@ -1,8 +1,7 @@
 # EXIF Datetime Updater
 
 Simple Python script to set EXIF DateTimeOriginal on photos. It prompts for a date (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS). If left blank, it tries to infer the date from the filename.
-- Processes JPEG/TIFF. PNG is skipped (PNG doesn’t reliably support EXIF writes).
-
+Processes png, jpg, jpeg
 ## Install
 ```bash
 pip3 install Pillow piexif tqdm
